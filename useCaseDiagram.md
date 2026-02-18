@@ -14,59 +14,38 @@
 ## Use Case Diagram
 
 ```mermaid
-graph LR
-    %% Actors (on the left)
-    RU((Remote User))
-    HU((Host User))
-    
-    %% System Boundary
-    subgraph NEwhere["NEwhere System"]
-        direction TB
-        
-        %% Remote User Use Cases
-        UC1[Connect to Remote Machine]
-        UC2[Enter Password]
-        UC3[View Remote Screen]
-        UC4[Control Remote Machine]
-        UC5[Disconnect]
-        
-        %% Host User Use Cases
-        UC6[Start Hosting]
-        UC7[Set Password]
-        UC8[Stop Hosting]
-        
-        %% System Use Cases
-        UC9[Validate Password]
-        UC10[Create Connection]
-        UC11[Stream Screen]
-        UC12[Forward Input]
-        
-        %% Include relationships (mandatory)
-        UC1 -.->|include| UC2
-        UC2 -.->|include| UC9
-        UC1 -.->|include| UC10
-        UC3 -.->|include| UC11
-        UC4 -.->|include| UC12
-        
-        UC6 -.->|include| UC7
-        
-        %% Extend relationships (optional)
-        UC5 -.->|extend| UC3
-        UC8 -.->|extend| UC6
-        
-        %% Flow
-        UC9 --> UC3
-        UC3 --> UC4
-    end
-    
-    %% Actor to Use Case associations
-    RU --> UC1
-    RU --> UC5
-    
-    HU --> UC6
-    HU --> UC8
-    
-    %% Style
+---
+config:
+  layout: elk
+---
+flowchart LR
+ subgraph NEwhere["NEwhere System"]
+    direction TB
+        UC1["Connect to Remote Machine"]
+        UC2["Enter Password"]
+        UC3["View Remote Screen"]
+        UC4["Control Remote Machine"]
+        UC5["Disconnect"]
+        UC6["Start Hosting"]
+        UC7["Set Password"]
+        UC8["Stop Hosting"]
+        UC9["Validate Password"]
+        UC10["Create Connection"]
+        UC11["Stream Screen"]
+        UC12["Forward Input"]
+  end
+    UC1 -. include .-> UC2 & UC10
+    UC2 -. include .-> UC9
+    UC3 -. include .-> UC11
+    UC4 -. include .-> UC12
+    UC6 -. include .-> UC7
+    UC5 -. extend .-> UC3
+    UC8 -. extend .-> UC6
+    UC9 --> UC3
+    UC3 --> UC4
+    RU(("Remote User")) --> UC1 & UC5
+    HU(("Host User")) --> UC6 & UC8
+
     style NEwhere fill:#f9f9f9,stroke:#333,stroke-width:3px
 ```
 
