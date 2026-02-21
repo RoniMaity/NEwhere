@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String  
+  name      String?
+  devices   Device[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Device {
+  id             String    @id @default(uuid())
+  name           String    
+  os             String    
+  isOnline       Boolean   @default(false)
+  
+  userId         String
+  user           User      @relation(fields: [userId], references: [id])
+  
+  hostSessions   Session[] @relation("HostSessions")
+  clientSessions Session[] @relation("ClientSessions")
+  
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model Session {
+  id             String    @id @default(uuid())
+  status         String    
+  passwordHash   String?   
+  
+  hostDeviceId   String
+  hostDevice     Device    @relation("HostSessions", fields: [hostDeviceId], references: [id])
+  
+  clientDeviceId String?   
+  clientDevice   Device?   @relation("ClientSessions", fields: [clientDeviceId], references: [id])
+  
+  startedAt      DateTime  @default(now())
+  endedAt        DateTime?
+}
