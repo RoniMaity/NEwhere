@@ -1,130 +1,96 @@
-# ◈ NEwhere — Project Idea
+# NEwhere
 
-> *Work from NEwhere. Access anything, from anywhere.*
-
----
-
-## ◆ What is NEwhere?
-
-NEwhere is an open-source, cross-platform remote desktop application that lets you fully access and control any computer — Linux, macOS, or Windows — from any other computer, over the internet, in real time.
-
-Whether you're sitting in college with your MacBook and want to use your Linux machine back in your hostel, or you're on Omarchy and need to control a Mac — NEwhere makes it feel like you're sitting right in front of it.
+> Work from NEwhere. Access anything, from anywhere.
 
 ---
 
-## ◆ The Problem It Solves
+## What is this?
 
-Students and developers often own multiple machines running different operating systems. Carrying all of them everywhere is not possible. Tools like TeamViewer and AnyDesk exist but are:
-- Closed source
-- Paid for advanced features
-- Not built for developers who want to own and self-host their infra
+You have a laptop at your hostel. You're sitting in college with your MacBook. You want to use that hostel machine — see its screen, type on it, click around — as if you were sitting right in front of it.
 
-NEwhere is built by a developer, for developers — open source, self-hostable, and fully cross-platform.
+That's NEwhere. It's like TeamViewer or AnyDesk but open source, free, and built by us.
 
 ---
 
-## ◆ Real World Use Case
+## The problem with existing tools
+
+TeamViewer and AnyDesk work, but they're closed source, paid for serious use, and not built for developers. We want something we fully own and can self-host.
+
+---
+
+## How it works (simple version)
 
 ```
-You (college) ──────────────────────────────── Your hostel room
-   MacBook                                        Omarchy (Linux)
-   [NEwhere Client]  ←──── internet ────→  [NEwhere Host Agent]
-
-You see your full Omarchy desktop on your Mac.
-You type, click, use it — exactly as if you're there.
-Meanwhile your Mac is still fully usable — NEwhere runs in a window.
+You (college MacBook)  ←───── internet ─────→  Your hostel machine
+     [NEwhere Client]                           [NEwhere Host]
 ```
 
----
+- Your hostel machine runs a small background program (the Host)
+- You open the Client app on your MacBook
+- The Host gets a short code like `ABC-123` and a password
+- You enter that code + password in the Client
+- Boom — you see your hostel screen and can control it
 
-## ◆ Key Features
-
-### MVP (Must Have)
-- [x] Real-time screen streaming from host to client
-- [x] Full keyboard and mouse input forwarding
-- [x] Cross-platform: Linux <-> Mac <-> Windows (any direction)
-- [x] Peer-to-peer connection via WebRTC (low latency)
-- [x] Signaling server to connect machines across the internet
-- [x] Unique session ID system (like RustDesk)
-- [x] Password-protected sessions
-- [x] End-to-end encrypted stream
-
-### V2 (Nice to Have)
-- [ ] Clipboard sharing (copy on one machine, paste on another)
-- [ ] File transfer between machines
-- [ ] Multi-monitor support
-- [ ] User accounts & saved devices
-- [ ] Mobile client (iOS / Android)
-- [ ] Audio streaming from remote machine
-
-### Future
-- [ ] Multi-seat (multiple people access the same machine independently)
-- [ ] Session recording
-- [ ] Chat during session
+The two machines talk directly to each other (peer-to-peer). The only thing that lives on our server is the "hey, connect these two machines" part. After that the server steps out.
 
 ---
 
-## ◆ System Overview
+## What we're building (in order)
 
-NEwhere has 3 main components:
-
-| Component | What it does |
-|---|---|
-| **NEwhere Server** | Signaling server on the cloud — helps two machines find each other |
-| **NEwhere Host** | Agent running on the machine being accessed (your hostel machine) |
-| **NEwhere Client** | Electron app you open on your current machine (your college Mac) |
-
----
-
-## ◆ Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Language | TypeScript (all components) |
-| Desktop App | Electron + React + TailwindCSS |
-| Signaling Server | Node.js + WebSocket (`ws`) |
-| Peer Connection | WebRTC (`wrtc` / `node-webrtc`) |
-| Screen Capture | `screenshot-desktop` / native APIs |
-| Input Simulation | `@nut-tree/nut-js` |
-| Auth & Security | JWT + bcrypt + WebRTC DTLS encryption |
-| Monorepo | Turborepo |
-| Deployment | Railway / Render (free tier) |
+- [ ] The signaling server — helps two machines find each other
+- [ ] Screen streaming — host sends its screen to the client live
+- [ ] Input forwarding — client sends mouse and keyboard events to the host
+- [ ] The Electron client app — the UI you open on your machine
+- [ ] Passwords and security — protect sessions
+- [ ] User accounts and saved devices — log in, see your machines (later)
 
 ---
 
-## ◆ Architecture Principles
+## Tech we're using and why
 
-- **OOP throughout** — encapsulation, abstraction, inheritance, polymorphism
-- **Clean layered backend** — Controllers → Services → Repositories
-- **Design patterns** — Observer (events), Singleton (connection manager), Strategy (encoder selection), Factory (session creation)
-- **Self-hostable** — anyone can run their own NEwhere server
-- **Security first** — no unencrypted data ever leaves either machine
+| What | Tool | Why |
+|---|---|---|
+| Language | TypeScript | Strong types, same language everywhere |
+| Desktop app | Electron + React + Tailwind | Cross-platform GUI, fast to build |
+| WebSocket server | `ws` | Simple, fast, no bloat |
+| Peer-to-peer video | `node-datachannel` | WebRTC for Node.js, actually works without painful setup |
+| Screen capture | `screenshot-desktop` | One line of code, works on Linux/Mac/Windows |
+| Mouse & keyboard control | `@nut-tree/nut-js` | Simulates input on any OS |
+| Session ID generation | `nanoid` | Makes short unique codes like `ABC-123` |
+| Password hashing | `bcryptjs` | Keeps passwords safe, pure JS so no build pain |
+| Message validation | `zod` | Makes sure messages between machines are the right shape |
+| Logging | `pino` | Fast logs so we can see what's happening |
+| Monorepo | Turborepo + pnpm | All three apps live in one repo |
 
 ---
 
-## ◆ Monorepo Structure
+## Folder structure
 
 ```
 NEwhere/
 ├── apps/
-│   ├── server/        # Signaling + relay server
-│   ├── host/          # Host agent (runs on remote machine)
-│   └── client/        # Electron desktop app
+│   ├── server/     → the cloud middleman (helps machines find each other)
+│   ├── host/       → runs on the machine being accessed
+│   └── client/     → the Electron app you open to connect
 ├── packages/
-│   └── shared/        # Shared types, utils, constants
-├── docs/              # All diagrams and documentation
+│   └── shared/     → types and constants used by all three apps
+├── docs/           → these docs
 └── turbo.json
 ```
 
 ---
 
-## ◆ Development Phases
+## Build phases
 
-| Phase | Description |
+| Phase | What gets built |
 |---|---|
-| Phase 1 | Signaling Server — WebSocket room & session management |
-| Phase 2 | Screen Streaming — Capture, encode, stream via WebRTC |
-| Phase 3 | Input Forwarding — Mouse & keyboard relay |
-| Phase 4 | Electron Client — Full desktop app with UI |
-| Phase 5 | Security — Auth, encryption, session passwords |
-| Phase 6 | Polish — Latency optimization, clipboard, file transfer |
+| 1 | Monorepo setup + shared types |
+| 2 | Signaling server (no database yet, sessions live in memory) |
+| 3 | Host agent — connects to server, captures screen, sets up WebRTC |
+| 4 | Client app — connects, receives stream, shows it on screen |
+| 5 | Input forwarding — mouse and keyboard control |
+| 6 | Session passwords and basic security |
+| 7 | Database + user accounts + saved devices |
+| 8 | Polish, clipboard sync, file transfer |
+
+> We're currently at: **Phase 1 starting.**
