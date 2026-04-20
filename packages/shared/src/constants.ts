@@ -16,6 +16,7 @@ export const EVENTS = {
   OFFER: 'webrtc:offer',               
   ANSWER: 'webrtc:answer',             
   ICE_CANDIDATE: 'webrtc:ice',         
+  READY: 'webrtc:ready',
 
   // General
   ERROR: 'error',                      

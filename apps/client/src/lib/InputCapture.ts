@@ -1,0 +1,87 @@
+import { InputEvent } from '@newhere/shared'
+
+export class InputCapture {
+  private element: HTMLElement
+  private mouseMoveCb?: (e: InputEvent) => void
+  private clickCb?: (e: InputEvent) => void
+  private keyCb?: (e: InputEvent) => void
+
+  constructor(element: HTMLElement) {
+    this.element = element
+    this.bindEvents()
+  }
+
+  private bindEvents() {
+    this.element.addEventListener('mousemove', this.onMouseMove)
+    this.element.addEventListener('mousedown', this.onClick)
+    this.element.addEventListener('contextmenu', this.onContextMenu)
+    this.element.addEventListener('keydown', this.onKeyDown)
+    this.element.addEventListener('keyup', this.onKeyUp)
+    
+    // Ensure element can receive keyboard events
+    if (this.element.tabIndex === -1) {
+       this.element.tabIndex = 0
+    }
+  }
+
+  public captureMouseMove(cb: (e: InputEvent) => void) {
+    this.mouseMoveCb = cb
+  }
+
+  public captureClick(cb: (e: InputEvent) => void) {
+    this.clickCb = cb
+  }
+
+  public captureKeyboard(cb: (e: InputEvent) => void) {
+    this.keyCb = cb
+  }
+
+  public stop() {
+    this.element.removeEventListener('mousemove', this.onMouseMove)
+    this.element.removeEventListener('mousedown', this.onClick)
+    this.element.removeEventListener('contextmenu', this.onContextMenu)
+    this.element.removeEventListener('keydown', this.onKeyDown)
+    this.element.removeEventListener('keyup', this.onKeyUp)
+  }
+
+  // Event handlers
+  private onMouseMove = (e: MouseEvent) => {
+    if (!this.mouseMoveCb) return
+    const rect = this.element.getBoundingClientRect()
+    // Assume element is a canvas
+    const canvas = this.element as HTMLCanvasElement
+    const scaleX = canvas.width ? canvas.width / rect.width : 1
+    const scaleY = canvas.height ? canvas.height / rect.height : 1
+    const x = Math.round((e.clientX - rect.left) * scaleX)
+    const y = Math.round((e.clientY - rect.top) * scaleY)
+    this.mouseMoveCb({ type: 'mousemove', x, y })
+  }
+
+  private onClick = (e: MouseEvent) => {
+    if (!this.clickCb) return
+    const rect = this.element.getBoundingClientRect()
+    const canvas = this.element as HTMLCanvasElement
+    const scaleX = canvas.width ? canvas.width / rect.width : 1
+    const scaleY = canvas.height ? canvas.height / rect.height : 1
+    const x = Math.round((e.clientX - rect.left) * scaleX)
+    const y = Math.round((e.clientY - rect.top) * scaleY)
+    const button = e.button === 2 ? 'right' : e.button === 1 ? 'middle' : 'left'
+    this.clickCb({ type: 'mouseclick', x, y, button })
+  }
+
+  private onContextMenu = (e: MouseEvent) => {
+    e.preventDefault()
+  }
+
+  private onKeyDown = (e: KeyboardEvent) => {
+    if (!this.keyCb) return
+    e.preventDefault()
+    this.keyCb({ type: 'keypress', key: e.key })
+  }
+
+  private onKeyUp = (e: KeyboardEvent) => {
+    if (!this.keyCb) return
+    e.preventDefault()
+    this.keyCb({ type: 'keyrelease', key: e.key })
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "@newhere/host",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup src/index.ts --format esm --out-dir dist",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@newhere/shared": "workspace:*",
+    "@nut-tree-fork/nut-js": "^4.2.3",
+    "bcryptjs": "^2.4.3",
+    "nanoid": "^5.1.9",
+    "node-datachannel": "^0.32.2",
+    "screenshot-desktop": "^1.15.0",
+    "sharp": "^0.34.5",
+    "ws": "^8.18.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.5.14",
+    "tsup": "^8.5.1",
+    "tsx": "^4.19.4"
+  }
+}

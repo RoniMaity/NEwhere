@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  // For development, we'll store the database inside the package itself or in a shared location.
+  // Using an environment variable makes it configurable.
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  displayName  String
+  createdAt    DateTime @default(now())
+  
+  devices      Device[]
+}
+
+model Device {
+  id         String   @id @default(uuid())
+  userId     String
+  name       String
+  os         String?
+  isOnline   Boolean  @default(false)
+  lastSeenAt DateTime @default(now())
+  
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  sessionsAsHost   Session[] @relation("HostDevice")
+  sessionsAsClient Session[] @relation("ClientDevice")
+}
+
+model Session {
+  id             String    @id @default(uuid())
+  sessionCode    String    @unique
+  passwordHash   String?
+  hostDeviceId   String
+  clientDeviceId String?
+  status         String    @default("WAITING") // WAITING, CONNECTED, DISCONNECTED
+  startedAt      DateTime  @default(now())
+  endedAt        DateTime?
+  
+  hostDevice   Device  @relation("HostDevice", fields: [hostDeviceId], references: [id], onDelete: Cascade)
+  clientDevice Device? @relation("ClientDevice", fields: [clientDeviceId], references: [id], onDelete: SetNull)
+}

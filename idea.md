@@ -82,15 +82,19 @@ NEwhere/
 
 ## Build phases
 
-| Phase | What gets built |
-|---|---|
-| 1 | Monorepo setup + shared types |
-| 2 | Signaling server (no database yet, sessions live in memory) |
-| 3 | Host agent — connects to server, captures screen, sets up WebRTC |
-| 4 | Client app — connects, receives stream, shows it on screen |
-| 5 | Input forwarding — mouse and keyboard control |
-| 6 | Session passwords and basic security |
-| 7 | Database + user accounts + saved devices |
-| 8 | Polish, clipboard sync, file transfer |
+| Phase | What gets built | Status |
+|---|---|---|
+| 1 | Monorepo setup + shared types | ✅ Done |
+| 2 | Signaling server (no database yet, sessions live in memory) | ✅ Done |
+| 3 | Host agent — connects to server, captures screen, sets up WebRTC | ✅ Done |
+| 4 | Client app — connects, receives stream, shows it on screen | ✅ Done |
+| 5 | Input forwarding — mouse and keyboard control | ✅ Done |
+| 6 | Session passwords and basic security | ✅ Done |
+| 7 | Database + user accounts + saved devices | ✅ Done |
+| 8 | Polish, clipboard sync, file transfer | ✅ Done |
+| 9 | OOP architecture realignment to class diagram spec | ✅ Done |
 
-> We're currently at: **Phase 1 starting.**
+> We're currently at: **Phase 9 complete. E2E verified.**
+> 
+> Stack: Electron client (`pnpm dev:all`) + Express signaling server (port 8080) + Host agent (NEWHERE_PASSWORD env)
+> Architecture: Strict Singleton/Controller/Service/Repository/Factory/Interface OOP layers per `classDiagram.md`

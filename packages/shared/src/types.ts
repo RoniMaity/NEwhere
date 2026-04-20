@@ -21,7 +21,8 @@ export interface SessionDTO {
 }
 
 // Input events that client sends to host
-export type InputEventType = 'mousemove' | 'mouseclick' | 'keypress' | 'keyrelease'
+// Input events that client sends to host
+export type InputEventType = 'mousemove' | 'mouseclick' | 'keypress' | 'keyrelease' | 'clipboard:read' | 'clipboard:write' | 'clipboard:content' | 'file:start' | 'file:chunk' | 'file:end'
 
 export interface InputEvent {
   type: InputEventType
@@ -29,4 +30,11 @@ export interface InputEvent {
   y?: number        // for mouse events
   key?: string      // for keyboard events
   button?: 'left' | 'right' | 'middle'  // for click events
+  
+  // Custom payloads
+  text?: string     // for clipboard text
+  name?: string     // for file transfer start
+  size?: number     // for file transfer start
+  chunkId?: number  // for file chunks
+  data?: string     // base64 encoded chunks
 }

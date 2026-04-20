@@ -1,0 +1,31 @@
+{
+  "name": "@newhere/client",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"electron-wait-vite\"",
+    "dev:vite": "vite",
+    "dev:electron": "wait-on tcp:5173 && electron .",
+    "dev:all": "concurrently -k \"pnpm dev:vite\" \"pnpm dev:electron\"",
+    "build": "vite build && tsc -p tsconfig.electron.json && electron-builder",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@newhere/shared": "workspace:*",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.5.2",
+    "concurrently": "^9.1.2",
+    "electron": "^35.2.1",
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.9.3",
+    "vite": "^6.3.4",
+    "wait-on": "^8.0.3"
+  }
+}
