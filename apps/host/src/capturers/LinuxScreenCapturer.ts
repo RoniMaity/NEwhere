@@ -17,7 +17,13 @@ export class LinuxScreenCapturer implements ScreenCapturer {
           if (err) {
             // Try standard fallback scrot if newer flags like -F -o -z are rejected
             exec('scrot /tmp/newhere_frame.jpg', { env: process.env, timeout: 2000 }, (err2: any) => {
-              if (err2) reject(err2)
+              if (err2) {
+                // Ubuntu specific fallback
+                exec('gnome-screenshot -f /tmp/newhere_frame.jpg', { env: process.env, timeout: 2000 }, (err3: any) => {
+                  if (err3) reject(err3)
+                  else resolve()
+                })
+              }
               else resolve()
             })
           }
