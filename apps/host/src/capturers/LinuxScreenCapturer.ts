@@ -7,11 +7,20 @@ export class LinuxScreenCapturer implements ScreenCapturer {
 
   async capture(): Promise<Buffer> {
     try {
-      // Modern Ubuntu blocks ImageMagick by default. Force native `scrot`.
       await new Promise<void>((resolve, reject) => {
         const { exec } = require('node:child_process')
-        exec('scrot -z -F /tmp/newhere_frame.jpg', (err: any) => {
-          if (err) reject(err)
+        // Standard scrot command, unconditionally overwrites the temp file.
+        exec('scrot /tmp/newhere_frame.jpg -F /tmp/newhere_frame.jpg -o -z', { 
+          env: process.env, 
+          timeout: 2000 
+        }, (err: any) => {
+          if (err) {
+            // Try standard fallback scrot if newer flags like -F -o -z are rejected
+            exec('scrot /tmp/newhere_frame.jpg', { env: process.env, timeout: 2000 }, (err2: any) => {
+              if (err2) reject(err2)
+              else resolve()
+            })
+          }
           else resolve()
         })
       })
@@ -25,13 +34,16 @@ export class LinuxScreenCapturer implements ScreenCapturer {
 
       return compressed
     } catch (err) {
-      // Fallback if scrot is completely missing
-      console.warn("scrot capture failed, falling back to screenshot-desktop...", err)
-      const rawImg = await screenshot({ format: 'jpg' })
-      return sharp(rawImg)
-        .resize(this.targetRes.width, this.targetRes.height, { fit: 'inside' })
-        .jpeg({ quality: 60, progressive: true })
-        .toBuffer()
+      console.warn("[Capturer] Scrot failed:", err)
+      // Return a blank frame instead of crashing the server so the stream stays alive
+      return sharp({
+        create: {
+          width: this.targetRes.width,
+          height: this.targetRes.height,
+          channels: 3,
+          background: { r: 0, g: 0, b: 0 }
+        }
+      }).jpeg().toBuffer()
     }
   }
 
