@@ -55,12 +55,12 @@ export class NutJsInputSimulator implements InputSimulator {
 
         case 'clipboard:write':
           if (event.text !== undefined) {
-            await clipboard.copy(event.text)
+            await clipboard.setContent(event.text)
           }
           break
 
         case 'clipboard:read':
-          return await clipboard.paste()
+          return await clipboard.getContent()
       }
     } catch (err) {
       console.warn('[Input] Simulation failed:', err)
