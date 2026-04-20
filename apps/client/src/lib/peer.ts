@@ -11,6 +11,9 @@ export class ClientPeer {
   private dataChannel: RTCDataChannel | null = null
   private onFrameCallback: OnFrameCallback | null = null
   private onClipboardCallback: ((text: string) => void) | null = null
+  
+  private iceQueue: RTCIceCandidateInit[] = []
+  private hasRemoteDescription = false
 
   constructor(
     private onIce: OnIceCallback,
@@ -51,12 +54,24 @@ export class ClientPeer {
 
   async setOffer(sdp: string): Promise<string> {
     await this.pc.setRemoteDescription({ type: 'offer', sdp })
+    this.hasRemoteDescription = true
+
+    // Process any ICE candidates that arrived before the offer
+    for (const candidate of this.iceQueue) {
+      await this.pc.addIceCandidate(candidate).catch(console.warn)
+    }
+    this.iceQueue = []
+
     const answer = await this.pc.createAnswer()
     await this.pc.setLocalDescription(answer)
     return answer.sdp!
   }
 
   async addIceCandidate(candidate: RTCIceCandidateInit): Promise<void> {
+    if (!this.hasRemoteDescription) {
+      this.iceQueue.push(candidate)
+      return
+    }
     await this.pc.addIceCandidate(candidate)
   }
 

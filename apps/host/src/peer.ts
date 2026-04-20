@@ -9,6 +9,9 @@ export class HostPeerConnection {
   private pc: InstanceType<typeof PeerConnection>
   private dataChannel: ReturnType<InstanceType<typeof PeerConnection>['createDataChannel']> | null = null
   private onInputCallback: ((event: InputEvent) => void) | null = null
+  
+  private iceQueue: { candidate: string; mid: string }[] = []
+  private hasRemoteDescription = false
 
   constructor(private sessionCode: string) {
     const peerName = `h-${nanoid(8)}`
@@ -76,9 +79,19 @@ export class HostPeerConnection {
 
   setRemoteAnswer(sdp: string): void {
     this.pc.setRemoteDescription(sdp, 'answer')
+    this.hasRemoteDescription = true
+
+    for (const { candidate, mid } of this.iceQueue) {
+      try { this.pc.addRemoteCandidate(candidate, mid) } catch (e) { console.warn(e) }
+    }
+    this.iceQueue = []
   }
 
   addIceCandidate(candidate: string, mid: string, _mLineIndex: number): void {
+    if (!this.hasRemoteDescription) {
+      this.iceQueue.push({ candidate, mid })
+      return
+    }
     this.pc.addRemoteCandidate(candidate, mid)
   }
 
