@@ -71,7 +71,7 @@ NEwhere runs elegantly on X11 desktop environments.
 
 1. **Clone and Install everything:**
    ```bash
-   git clone <repo-url> newhere
+   git clone https://github.com/RoniMaity/NEwhere.git newhere
    cd newhere
    pnpm install
    ```
