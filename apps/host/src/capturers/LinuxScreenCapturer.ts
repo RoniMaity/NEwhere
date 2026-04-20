@@ -1,6 +1,7 @@
 import { ScreenCapturer, Resolution } from '../interfaces/ScreenCapturer.js'
-import screenshot from 'screenshot-desktop'
 import sharp from 'sharp'
+import { exec } from 'node:child_process'
+import { readFile } from 'node:fs/promises'
 
 export class LinuxScreenCapturer implements ScreenCapturer {
   private targetRes: Resolution = { width: 1280, height: 720 }
@@ -8,7 +9,6 @@ export class LinuxScreenCapturer implements ScreenCapturer {
   async capture(): Promise<Buffer> {
     try {
       await new Promise<void>((resolve, reject) => {
-        const { exec } = require('node:child_process')
         // Standard scrot command, unconditionally overwrites the temp file.
         exec('scrot /tmp/newhere_frame.jpg -F /tmp/newhere_frame.jpg -o -z', { 
           env: process.env, 
@@ -25,7 +25,7 @@ export class LinuxScreenCapturer implements ScreenCapturer {
         })
       })
 
-      const rawImg = await import('node:fs/promises').then(fs => fs.readFile('/tmp/newhere_frame.jpg'))
+      const rawImg = await readFile('/tmp/newhere_frame.jpg')
       
       const compressed = await sharp(rawImg)
         .resize(this.targetRes.width, this.targetRes.height, { fit: 'inside' })
