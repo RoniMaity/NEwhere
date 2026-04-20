@@ -47,8 +47,16 @@ export class InputCapture {
   }
 
   // Event handlers
+  private lastMouseMove = 0
+
   private onMouseMove = (e: MouseEvent) => {
     if (!this.mouseMoveCb) return
+    
+    // Throttle to ~60Hz to prevent WebRTC DataChannel flooding
+    const now = Date.now()
+    if (now - this.lastMouseMove < 16) return
+    this.lastMouseMove = now
+
     const rect = this.element.getBoundingClientRect()
     // Assume element is a canvas
     const canvas = this.element as HTMLCanvasElement
