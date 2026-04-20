@@ -11,6 +11,7 @@ export class ClientApp {
   private cbClipboard?: (text: string) => void
   private cbConnected?: () => void
   private cbDisconnected?: () => void
+  private socketHandlers?: Record<string, any>
 
   constructor() {}
 
@@ -56,6 +57,12 @@ export class ClientApp {
       if (this.cbDisconnected) this.cbDisconnected()
     }
 
+    this.socketHandlers = {
+      offer: onOffer,
+      ice: onIce,
+      hostDisconnected: onHostDisconnected
+    }
+
     socket.on('webrtc:offer', onOffer)
     socket.on('webrtc:ice', onIce)
     socket.on('host:disconnected', onHostDisconnected)
@@ -67,9 +74,12 @@ export class ClientApp {
   public disconnect() {
     this.inputCapture?.stop()
     this.peerConnection?.close()
-    // Could manually rip out socket listeners if needed, 
-    // but in a SPA usually tearing down the whole thing drops it, or call socket.off()
-    socket.close()
+    
+    if (this.socketHandlers) {
+      socket.off('webrtc:offer', this.socketHandlers.offer)
+      socket.off('webrtc:ice', this.socketHandlers.ice)
+      socket.off('host:disconnected', this.socketHandlers.hostDisconnected)
+    }
   }
 
   public onFrame(cb: (frame: string) => void) {
