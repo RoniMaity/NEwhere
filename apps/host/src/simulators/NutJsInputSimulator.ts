@@ -3,7 +3,9 @@ import { InputEvent } from '@newhere/shared'
 import { InputSimulator } from '../interfaces/InputSimulator.js'
 
 // Disable slow motion for performance
-mouse.config.mouseSpeed = 2000
+mouse.config.mouseSpeed = 99999
+mouse.config.autoDelayMs = 0
+keyboard.config.autoDelayMs = 0
 
 export class NutJsInputSimulator implements InputSimulator {
   async simulate(event: InputEvent): Promise<string | undefined> {
@@ -11,18 +13,29 @@ export class NutJsInputSimulator implements InputSimulator {
       switch (event.type) {
         case 'mousemove':
           if (event.x !== undefined && event.y !== undefined) {
-            await mouse.move([new Point(event.x, event.y)])
+            await mouse.setPosition(new Point(event.x, event.y))
           }
           break
 
-        case 'mouseclick':
+        case 'mousedown':
           if (event.x !== undefined && event.y !== undefined) {
-            await mouse.move([new Point(event.x, event.y)])
+            await mouse.setPosition(new Point(event.x, event.y))
             const btn =
               event.button === 'right' ? Button.RIGHT :
               event.button === 'middle' ? Button.MIDDLE :
               Button.LEFT
-            await mouse.click(btn)
+            await mouse.pressButton(btn)
+          }
+          break
+
+        case 'mouseup':
+          if (event.x !== undefined && event.y !== undefined) {
+            await mouse.setPosition(new Point(event.x, event.y))
+            const btn =
+              event.button === 'right' ? Button.RIGHT :
+              event.button === 'middle' ? Button.MIDDLE :
+              Button.LEFT
+            await mouse.releaseButton(btn)
           }
           break
 

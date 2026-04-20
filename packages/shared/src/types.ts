@@ -22,7 +22,7 @@ export interface SessionDTO {
 
 // Input events that client sends to host
 // Input events that client sends to host
-export type InputEventType = 'mousemove' | 'mouseclick' | 'keypress' | 'keyrelease' | 'clipboard:read' | 'clipboard:write' | 'clipboard:content' | 'file:start' | 'file:chunk' | 'file:end'
+export type InputEventType = 'mousemove' | 'mouseclick' | 'mousedown' | 'mouseup' | 'keypress' | 'keyrelease' | 'clipboard:read' | 'clipboard:write' | 'clipboard:content' | 'file:start' | 'file:chunk' | 'file:end'
 
 export interface InputEvent {
   type: InputEventType

@@ -13,7 +13,8 @@ export class InputCapture {
 
   private bindEvents() {
     this.element.addEventListener('mousemove', this.onMouseMove)
-    this.element.addEventListener('mousedown', this.onClick)
+    this.element.addEventListener('mousedown', this.onMouseDown)
+    this.element.addEventListener('mouseup', this.onMouseUp)
     this.element.addEventListener('contextmenu', this.onContextMenu)
     this.element.addEventListener('keydown', this.onKeyDown)
     this.element.addEventListener('keyup', this.onKeyUp)
@@ -38,7 +39,8 @@ export class InputCapture {
 
   public stop() {
     this.element.removeEventListener('mousemove', this.onMouseMove)
-    this.element.removeEventListener('mousedown', this.onClick)
+    this.element.removeEventListener('mousedown', this.onMouseDown)
+    this.element.removeEventListener('mouseup', this.onMouseUp)
     this.element.removeEventListener('contextmenu', this.onContextMenu)
     this.element.removeEventListener('keydown', this.onKeyDown)
     this.element.removeEventListener('keyup', this.onKeyUp)
@@ -57,7 +59,7 @@ export class InputCapture {
     this.mouseMoveCb({ type: 'mousemove', x, y })
   }
 
-  private onClick = (e: MouseEvent) => {
+  private onMouseDown = (e: MouseEvent) => {
     if (!this.clickCb) return
     const rect = this.element.getBoundingClientRect()
     const canvas = this.element as HTMLCanvasElement
@@ -66,7 +68,19 @@ export class InputCapture {
     const x = Math.round((e.clientX - rect.left) * scaleX)
     const y = Math.round((e.clientY - rect.top) * scaleY)
     const button = e.button === 2 ? 'right' : e.button === 1 ? 'middle' : 'left'
-    this.clickCb({ type: 'mouseclick', x, y, button })
+    this.clickCb({ type: 'mousedown', x, y, button })
+  }
+
+  private onMouseUp = (e: MouseEvent) => {
+    if (!this.clickCb) return
+    const rect = this.element.getBoundingClientRect()
+    const canvas = this.element as HTMLCanvasElement
+    const scaleX = canvas.width ? canvas.width / rect.width : 1
+    const scaleY = canvas.height ? canvas.height / rect.height : 1
+    const x = Math.round((e.clientX - rect.left) * scaleX)
+    const y = Math.round((e.clientY - rect.top) * scaleY)
+    const button = e.button === 2 ? 'right' : e.button === 1 ? 'middle' : 'left'
+    this.clickCb({ type: 'mouseup', x, y, button })
   }
 
   private onContextMenu = (e: MouseEvent) => {

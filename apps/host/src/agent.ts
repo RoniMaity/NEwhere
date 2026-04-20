@@ -6,7 +6,7 @@ import { ScreenCapturerFactory } from './factories/ScreenCapturerFactory.js'
 import { NutJsInputSimulator } from './simulators/NutJsInputSimulator.js'
 import type { InputEvent } from '@newhere/shared'
 
-const FRAME_INTERVAL_MS = 50  // ~20 FPS
+const FRAME_INTERVAL_MS = 30  // ~33 FPS
 
 export class HostAgent {
   private signaling = new SignalingClient()
