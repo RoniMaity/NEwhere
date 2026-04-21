@@ -14,8 +14,10 @@ export class InputCapture {
   private bindEvents() {
     this.element.addEventListener('mousemove', this.onMouseMove)
     this.element.addEventListener('mousedown', this.onMouseDown)
-    // Bind pointer up globally to catch clicks released outside the canvas bound
-    window.addEventListener('pointerup', this.onMouseUp)
+    // Bind pointer and mouse releases globally to never drop a drag event
+    document.addEventListener('pointerup', this.onMouseUp)
+    document.addEventListener('mouseup', this.onMouseUp)
+    
     this.element.addEventListener('contextmenu', this.onContextMenu)
     this.element.addEventListener('keydown', this.onKeyDown)
     this.element.addEventListener('keyup', this.onKeyUp)
@@ -44,7 +46,8 @@ export class InputCapture {
   public stop() {
     this.element.removeEventListener('mousemove', this.onMouseMove)
     this.element.removeEventListener('mousedown', this.onMouseDown)
-    window.removeEventListener('pointerup', this.onMouseUp)
+    document.removeEventListener('pointerup', this.onMouseUp)
+    document.removeEventListener('mouseup', this.onMouseUp)
     this.element.removeEventListener('contextmenu', this.onContextMenu)
     this.element.removeEventListener('keydown', this.onKeyDown)
     this.element.removeEventListener('keyup', this.onKeyUp)

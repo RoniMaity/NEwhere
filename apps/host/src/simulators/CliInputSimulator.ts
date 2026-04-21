@@ -66,16 +66,14 @@ export class CliInputSimulator implements InputSimulator {
 
         case 'keypress':
           if (event.key) {
-            const key = event.key.length === 1 ? event.key.toLowerCase() : event.key
-            const x11Key = event.key === 'Enter' ? 'Return' : event.key === 'Space' ? 'space' : key
+            const x11Key = this.mapX11Key(event.key)
             this.sendCmd(`keydown ${x11Key}`)
           }
           break
 
         case 'keyrelease':
           if (event.key) {
-            const key = event.key.length === 1 ? event.key.toLowerCase() : event.key
-            const x11Key = event.key === 'Enter' ? 'Return' : event.key === 'Space' ? 'space' : key
+            const x11Key = this.mapX11Key(event.key)
             this.sendCmd(`keyup ${x11Key}`)
           }
           break
@@ -90,5 +88,24 @@ export class CliInputSimulator implements InputSimulator {
       console.warn('[Input] CLI Simulation failed:', err)
     }
     return undefined
+  }
+
+  private mapX11Key(key: string): string {
+    const specials: Record<string, string> = {
+      'Enter': 'Return',
+      'Space': 'space',
+      'ArrowUp': 'Up',
+      'ArrowDown': 'Down',
+      'ArrowLeft': 'Left',
+      'ArrowRight': 'Right',
+      'Backspace': 'BackSpace',
+      'Escape': 'Escape',
+      'Tab': 'Tab',
+      'Shift': 'Shift_L',
+      'Control': 'Control_L',
+      'Alt': 'Alt_L',
+      'Meta': 'Super_L'
+    }
+    return specials[key] || (key.length === 1 ? key.toLowerCase() : key)
   }
 }
