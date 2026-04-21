@@ -10,11 +10,17 @@ export class CliInputSimulator implements InputSimulator {
   }
 
   private startXdotool() {
-    this.xdotoolProcess = spawn('xdotool', ['-'], { env: process.env })
+    // We strictly use stdbuf -i0 to completely DISABLE the C-level 4KB block buffer! 
+    // Without this, Linux physically refuses to execute the pipelined mouse commands until 4000 bytes stack up.
+    this.xdotoolProcess = spawn('stdbuf', ['-i0', '-o0', '-e0', 'xdotool', '-'], { env: process.env })
     this.xdotoolProcess.stdin?.setDefaultEncoding('utf-8')
 
     this.xdotoolProcess.on('error', (err) => {
       console.warn('[CliSimulator] xdotool process error:', err)
+    })
+
+    this.xdotoolProcess.stderr?.on('data', (data) => {
+      console.warn(`[CliSimulator] xdotool error: ${data}`)
     })
 
     this.xdotoolProcess.on('exit', () => {
@@ -30,8 +36,10 @@ export class CliInputSimulator implements InputSimulator {
   }
 
   async simulate(event: InputEvent): Promise<string | undefined> {
-    if (event.type !== 'mousemove') {
-      console.log(`[Input] Received: ${event.type}`)
+    
+    // Hardcore debugging to prove if the webRTC coordinates crossed!
+    if (event.type !== 'mousemove' || (event.x && event.x % 10 === 0)) {
+         console.log(`[Input] Executing: ${event.type} at ${event.x},${event.y}`)
     }
     
     try {
