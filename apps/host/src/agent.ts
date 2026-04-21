@@ -3,7 +3,7 @@ import { HostPeerConnection } from './peer.js'
 import { ScreenCapturer } from './interfaces/ScreenCapturer.js'
 import { InputSimulator } from './interfaces/InputSimulator.js'
 import { ScreenCapturerFactory } from './factories/ScreenCapturerFactory.js'
-import { NutJsInputSimulator } from './simulators/NutJsInputSimulator.js'
+import { CliInputSimulator } from './simulators/CliInputSimulator.js'
 import type { InputEvent } from '@newhere/shared'
 
 const FRAME_INTERVAL_MS = 30  // ~33 FPS
@@ -19,7 +19,7 @@ export class HostAgent {
 
   constructor(private password?: string, private token?: string, private deviceId?: string) {
     this.capturer = ScreenCapturerFactory.create()
-    this.inputSim = new NutJsInputSimulator()
+    this.inputSim = new CliInputSimulator()
   }
 
   async start(): Promise<void> {

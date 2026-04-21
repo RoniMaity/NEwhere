@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@newhere/shared": "workspace:*",
-    "@nut-tree-fork/nut-js": "^4.2.3",
     "bcryptjs": "^2.4.3",
     "nanoid": "^5.1.9",
     "node-datachannel": "^0.32.2",
