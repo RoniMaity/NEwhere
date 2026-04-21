@@ -14,10 +14,14 @@ export class InputCapture {
   private bindEvents() {
     this.element.addEventListener('mousemove', this.onMouseMove)
     this.element.addEventListener('mousedown', this.onMouseDown)
-    this.element.addEventListener('mouseup', this.onMouseUp)
+    // Bind pointer up globally to catch clicks released outside the canvas bound
+    window.addEventListener('pointerup', this.onMouseUp)
     this.element.addEventListener('contextmenu', this.onContextMenu)
     this.element.addEventListener('keydown', this.onKeyDown)
     this.element.addEventListener('keyup', this.onKeyUp)
+    
+    // Completely disable native HTML5 drag-and-drop to stop event swallowing
+    this.element.addEventListener('dragstart', (e) => e.preventDefault())
     
     // Ensure element can receive keyboard events
     if (this.element.tabIndex === -1) {
@@ -40,7 +44,7 @@ export class InputCapture {
   public stop() {
     this.element.removeEventListener('mousemove', this.onMouseMove)
     this.element.removeEventListener('mousedown', this.onMouseDown)
-    this.element.removeEventListener('mouseup', this.onMouseUp)
+    window.removeEventListener('pointerup', this.onMouseUp)
     this.element.removeEventListener('contextmenu', this.onContextMenu)
     this.element.removeEventListener('keydown', this.onKeyDown)
     this.element.removeEventListener('keyup', this.onKeyUp)
