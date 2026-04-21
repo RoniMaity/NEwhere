@@ -10,6 +10,9 @@ keyboard.config.autoDelayMs = 0
 export class NutJsInputSimulator implements InputSimulator {
   async simulate(event: InputEvent): Promise<string | undefined> {
     try {
+      if (event.type !== 'mousemove') {
+         console.log(`[Input] Received: ${event.type} at x:${event.x} y:${event.y}`)
+      }
       switch (event.type) {
         case 'mousemove':
           if (event.x !== undefined && event.y !== undefined) {
