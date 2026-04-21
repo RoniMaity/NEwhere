@@ -10,16 +10,16 @@ export class LinuxScreenCapturer implements ScreenCapturer {
     try {
       await new Promise<void>((resolve, reject) => {
         // Standard scrot command, unconditionally overwrites the temp file.
-        exec('scrot /tmp/newhere_frame.jpg -F /tmp/newhere_frame.jpg -o -z', { 
+        exec('scrot /dev/shm/newhere_frame.jpg -F /dev/shm/newhere_frame.jpg -o -z', { 
           env: process.env, 
           timeout: 2000 
         }, (err: any) => {
           if (err) {
             // Try standard fallback scrot if newer flags like -F -o -z are rejected
-            exec('scrot /tmp/newhere_frame.jpg', { env: process.env, timeout: 2000 }, (err2: any) => {
+            exec('scrot /dev/shm/newhere_frame.jpg', { env: process.env, timeout: 2000 }, (err2: any) => {
               if (err2) {
                 // Ubuntu specific fallback
-                exec('gnome-screenshot -f /tmp/newhere_frame.jpg', { env: process.env, timeout: 2000 }, (err3: any) => {
+                exec('gnome-screenshot -f /dev/shm/newhere_frame.jpg', { env: process.env, timeout: 2000 }, (err3: any) => {
                   if (err3) reject(err3)
                   else resolve()
                 })
@@ -31,7 +31,7 @@ export class LinuxScreenCapturer implements ScreenCapturer {
         })
       })
 
-      const rawImg = await readFile('/tmp/newhere_frame.jpg')
+      const rawImg = await readFile('/dev/shm/newhere_frame.jpg')
       
       const compressed = await sharp(rawImg)
         .resize(this.targetRes.width, this.targetRes.height, { fit: 'inside' })
