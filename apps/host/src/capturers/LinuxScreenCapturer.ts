@@ -9,17 +9,17 @@ export class LinuxScreenCapturer implements ScreenCapturer {
   async capture(): Promise<Buffer> {
     try {
       await new Promise<void>((resolve, reject) => {
-        // Standard scrot command, unconditionally overwrites the temp file.
-        exec('scrot /dev/shm/newhere_frame.jpg -F /dev/shm/newhere_frame.jpg -o -z', { 
+        // Standard scrot command, unconditionally overwrites the temp file. -p explicitly captures the pointer.
+        exec('scrot /dev/shm/newhere_frame.jpg -p -F /dev/shm/newhere_frame.jpg -o -z', { 
           env: process.env, 
           timeout: 2000 
         }, (err: any) => {
           if (err) {
             // Try standard fallback scrot if newer flags like -F -o -z are rejected
-            exec('scrot /dev/shm/newhere_frame.jpg', { env: process.env, timeout: 2000 }, (err2: any) => {
+            exec('scrot -p /dev/shm/newhere_frame.jpg', { env: process.env, timeout: 2000 }, (err2: any) => {
               if (err2) {
-                // Ubuntu specific fallback
-                exec('gnome-screenshot -f /dev/shm/newhere_frame.jpg', { env: process.env, timeout: 2000 }, (err3: any) => {
+                // Ubuntu specific fallback. -p captures the pointer.
+                exec('gnome-screenshot -p -f /dev/shm/newhere_frame.jpg', { env: process.env, timeout: 2000 }, (err3: any) => {
                   if (err3) reject(err3)
                   else resolve()
                 })
