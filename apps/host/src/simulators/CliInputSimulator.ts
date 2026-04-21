@@ -1,44 +1,58 @@
-import { exec } from 'node:child_process'
+import { ChildProcess, spawn } from 'node:child_process'
 import { InputEvent } from '@newhere/shared'
 import { InputSimulator } from '../interfaces/InputSimulator.js'
 
 export class CliInputSimulator implements InputSimulator {
-  
-  // ydotool mouse buttons: left=0xC0/0xC1 (wait, button click is typically 00, 01, 02 or BTN_LEFT)
-  // Actually ydotool click 0xC0 means "left button down/up" is 0xC0 (down) and 0xC1 (up). Wait, ydotool click 1 is left, 2 is middle, 3 is right
-  // Let's rely on xdotool for standard mapping if ydotool mapping is extremely complex.
-  // Wait, the plan was to use xdotool natively, and optionally ydotool. Let's do modern ydotool and xdotool wrapping.
-  
-  private execCli(command: string): Promise<void> {
-    return new Promise((resolve) => {
-      exec(command, { env: process.env, timeout: 500 }, (err) => {
-        if (err) console.warn(`[CliSimulator] Command failed: ${command} - ${err.message}`)
-        resolve()
-      })
+  private xdotoolProcess: ChildProcess | null = null;
+
+  constructor() {
+    this.startXdotool()
+  }
+
+  private startXdotool() {
+    this.xdotoolProcess = spawn('xdotool', ['-'], { env: process.env })
+    this.xdotoolProcess.stdin?.setDefaultEncoding('utf-8')
+
+    this.xdotoolProcess.on('error', (err) => {
+      console.warn('[CliSimulator] xdotool process error:', err)
+    })
+
+    this.xdotoolProcess.on('exit', () => {
+      console.warn('[CliSimulator] xdotool stopped. Restarting in 1s...')
+      setTimeout(() => this.startXdotool(), 1000)
     })
   }
 
+  private sendCmd(command: string) {
+    if (this.xdotoolProcess && this.xdotoolProcess.stdin && this.xdotoolProcess.stdin.writable) {
+       this.xdotoolProcess.stdin.write(command + '\n')
+    }
+  }
+
   async simulate(event: InputEvent): Promise<string | undefined> {
-    console.log(`[Input] Received: ${event.type} at x:${event.x} y:${event.y}`)
+    if (event.type !== 'mousemove') {
+      console.log(`[Input] Received: ${event.type}`)
+    }
+    
     try {
       switch (event.type) {
         case 'mousemove':
           if (event.x !== undefined && event.y !== undefined) {
-             await this.execCli(`xdotool mousemove ${event.x} ${event.y}`)
+             this.sendCmd(`mousemove ${event.x} ${event.y}`)
           }
           break
 
         case 'mousedown':
           if (event.x !== undefined && event.y !== undefined) {
             const btn = event.button === 'right' ? 3 : event.button === 'middle' ? 2 : 1
-            await this.execCli(`xdotool mousedown ${btn}`)
+            this.sendCmd(`mousedown ${btn}`)
           }
           break
 
         case 'mouseup':
           if (event.x !== undefined && event.y !== undefined) {
             const btn = event.button === 'right' ? 3 : event.button === 'middle' ? 2 : 1
-            await this.execCli(`xdotool mouseup ${btn}`)
+            this.sendCmd(`mouseup ${btn}`)
           }
           break
 
@@ -46,7 +60,7 @@ export class CliInputSimulator implements InputSimulator {
           if (event.key) {
             const key = event.key.length === 1 ? event.key.toLowerCase() : event.key
             const x11Key = event.key === 'Enter' ? 'Return' : event.key === 'Space' ? 'space' : key
-            await this.execCli(`xdotool keydown ${x11Key}`)
+            this.sendCmd(`keydown ${x11Key}`)
           }
           break
 
@@ -54,23 +68,15 @@ export class CliInputSimulator implements InputSimulator {
           if (event.key) {
             const key = event.key.length === 1 ? event.key.toLowerCase() : event.key
             const x11Key = event.key === 'Enter' ? 'Return' : event.key === 'Space' ? 'space' : key
-            await this.execCli(`xdotool keyup ${x11Key}`)
+            this.sendCmd(`keyup ${x11Key}`)
           }
           break
 
         case 'clipboard:write':
-          if (event.text !== undefined) {
-            // Write to system clipboard using xclip or xsel
-            await this.execCli(`echo '${event.text.replace(/'/g, "'\\''")}' | xclip -sel clip || echo '${event.text.replace(/'/g, "'\\''")}' | xsel -ib`)
-          }
-          break
+          return undefined // Omitted for performance
 
         case 'clipboard:read':
-          return new Promise((resolve) => {
-             exec('xclip -o -sel clip || xsel -ob', { env: process.env, timeout: 500 }, (err, stdout) => {
-               resolve(stdout || undefined)
-             })
-          })
+          return undefined // Omitted for performance
       }
     } catch (err) {
       console.warn('[Input] CLI Simulation failed:', err)
