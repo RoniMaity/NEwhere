@@ -24,40 +24,29 @@ export class CliInputSimulator implements InputSimulator {
       switch (event.type) {
         case 'mousemove':
           if (event.x !== undefined && event.y !== undefined) {
-             // Try ydotool first (absolute movement), fallback to xdotool
-             const yCmd = `ydotool mousemove -x ${event.x} -y ${event.y} || ydotool mousemove -a ${event.x} ${event.y}`
-             const xCmd = `xdotool mousemove ${event.x} ${event.y}`
-             await this.execCli(`${yCmd} || ${xCmd}`)
+             await this.execCli(`xdotool mousemove ${event.x} ${event.y}`)
           }
           break
 
         case 'mousedown':
           if (event.x !== undefined && event.y !== undefined) {
             const btn = event.button === 'right' ? 3 : event.button === 'middle' ? 2 : 1
-            const yCmd = `ydotool click 0x40` // usually ydotool click down takes special hex, but let's just use xdotool for standard click holds
-            const xCmd = `xdotool mousedown ${btn}`
-            // Because ydotool click/down states vary wildly by version, xdotool mousedown is preferred if X11 fallback active.
-            // Also some versions of ydotool don't support mousedown reliably.
-            await this.execCli(`${xCmd} || ydotool click 1`)
+            await this.execCli(`xdotool mousedown ${btn}`)
           }
           break
 
         case 'mouseup':
           if (event.x !== undefined && event.y !== undefined) {
             const btn = event.button === 'right' ? 3 : event.button === 'middle' ? 2 : 1
-            const xCmd = `xdotool mouseup ${btn}`
-            // Only try xdotool for individual up/down states, since ydotool handles full clicks automatically
-            await this.execCli(`${xCmd}`)
+            await this.execCli(`xdotool mouseup ${btn}`)
           }
           break
 
         case 'keypress':
           if (event.key) {
-            // Very rudimentary key mapping for CLI
             const key = event.key.length === 1 ? event.key.toLowerCase() : event.key
-            // xdotool uses standard X11 KeySyms (Return, Tab, Escape)
             const x11Key = event.key === 'Enter' ? 'Return' : event.key === 'Space' ? 'space' : key
-            await this.execCli(`xdotool keydown ${x11Key} || ydotool key ${key}:1`)
+            await this.execCli(`xdotool keydown ${x11Key}`)
           }
           break
 
@@ -65,7 +54,7 @@ export class CliInputSimulator implements InputSimulator {
           if (event.key) {
             const key = event.key.length === 1 ? event.key.toLowerCase() : event.key
             const x11Key = event.key === 'Enter' ? 'Return' : event.key === 'Space' ? 'space' : key
-            await this.execCli(`xdotool keyup ${x11Key} || ydotool key ${key}:0`)
+            await this.execCli(`xdotool keyup ${x11Key}`)
           }
           break
 
